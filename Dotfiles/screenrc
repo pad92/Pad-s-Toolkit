@@ -1,0 +1,27 @@
+
+## All
+hardstatus alwayslastline '%{= 07b}[%H %l]%=%?%-Lw%?(%n*%f%t%?(%u)%?)%?%+Lw%?%?%=[%d/%m/%y  %c]'
+
+## Current only
+#hardstatus alwayslastline '%{= 07b}[%H %l]%=%?%n*%f%t%?(%u)%?)%?%=[%d/%m/%y  %c]'
+
+## None
+#hardstatus alwayslastline '%{= 07b}[%H %l]%?(%n*%f%t%?(%u)%?)%=[%d/%m/%y  %c]'
+
+## sur deux lignes
+# caption always "%{Yb} %02d-%02m-%Y %0c %{k}|%{C} LABO %{k}|%{G} %{W}%n %{R}%t"
+# hardstatus alwayslastline "%{=b db}[ %{-b dy}%H %{+b db}][ %{+b dd}%?%{w}%{-b}%-Lw%? %{+b}([%n]%{-b} %{+b}%f%t%?(%u)%?)%{-b}%{w}%?%+Lw%?%?%= %{+b b}][%{-b w} %d/%m %{y}%c %{+b b}]"
+
+altscreen       on
+autodetach      on
+defbce          on
+defnonblock     on
+defscrollback   10000
+autodetach      on
+startup_message off
+pow_detach_msg  "Screen session of \$LOGNAME \$:cr:\$:nl:ended."
+termcapinfo     * '' 'hs:ts=\E_:fs=\E\\:ds=\E_\E\\'
+defhstatus      "screen: ^En (^Et)"
+
+termcap  xterm hs@:cs=\E[%i%d;%dr:im=\E[4h:ei=\E[4l
+terminfo xterm hs@:cs=\E[%i%p1%d;%p2%dr:im=\E[4h:ei=\E[4l
