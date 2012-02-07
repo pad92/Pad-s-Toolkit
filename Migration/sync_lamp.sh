@@ -25,6 +25,6 @@ for BDD in $BDDS
 do
     echo "$(date '+%D %H:%M:%S') -- $BDD"
     mysql -B -e "DROP DATABASE IF EXISTS $BDD;"
-    mysql -h $REMOTE --skip-column-names -B -e "SHOW CREATE DATABASE $BDD\G" | grep ^CREATE | mysql
+    mysql -h $REMOTE --skip-column-names -B -e "SHOW CREATE DATABASE \`$BDD\`\G" | grep ^CREATE | mysql
     mysqldump -h $REMOTE $BDD | mysql $BDD
 done
