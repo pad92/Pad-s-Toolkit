@@ -23,8 +23,10 @@ done
 echo "$(date '+%D %H:%M:%S') * bbd"
 for BDD in $BDDS
 do
-    echo "$(date '+%D %H:%M:%S') -- $BDD"
-    mysql -B -e "DROP DATABASE IF EXISTS $BDD;"
+    echo "$(date '+%D %H:%M:%S') -- $BDD : Drop"
+    mysql -B -e "DROP DATABASE IF EXISTS \`$BDD\`;"
+    echo "$(date '+%D %H:%M:%S') -- $BDD : Create"
     mysql -h $REMOTE --skip-column-names -B -e "SHOW CREATE DATABASE \`$BDD\`\G" | grep ^CREATE | mysql
+    echo "$(date '+%D %H:%M:%S') -- $BDD : Import"
     mysqldump -h $REMOTE $BDD | mysql $BDD
 done
