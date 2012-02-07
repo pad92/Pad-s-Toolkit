@@ -30,3 +30,7 @@ do
     echo "$(date '+%D %H:%M:%S') -- $BDD : Import"
     mysqldump -h $REMOTE $BDD | mysql $BDD
 done
+
+
+## Display all grants
+# mysql -h $REMOTE --skip-column-names -B -e "select user,host from mysql.user" | awk '{print "show grants for \x27"$1"\x27@\x27"$2"\x27;"}'  | mysql -h $REMOTE --skip-column-names -B
