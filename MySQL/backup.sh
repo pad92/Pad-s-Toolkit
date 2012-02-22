@@ -3,7 +3,7 @@
 BCKDIR='/var/backup/mysql'
 MYCNF='/etc/mysql/debian.cnf'
 
-BIN_DEPS='mysql mysqldump'
+BIN_DEPS='bzip2 mysql mysqldump'
 DATE=$(date '+%Y%m%d')
 DATEOLD=$(date '+%Y%m%d –date ’1 weeks ago’')
 DST=$BCKDIR/$DATE
@@ -28,8 +28,8 @@ for BDD in `mysql --defaults-extra-file=$MYCNF --skip-column-names -B -e "SHOW d
     for TABLE in `mysql --skip-column-names -B $BDD -e "SHOW TABLES;" | grep -v slow_log | grep -v general_log`; do
         mkdir $DST/$BDD 2>/dev/null 1>&2
         mysqldump --defaults-file=$MYCNF --opt $BDD $TABLE > $DST/$BDD/$TABLE.sql
+        bzip2 $DST/$BDD/$TABLE.sql &
         echo -ne "."
     done
-    gzip $DST/$BDD/*.sql &
     echo -ne "\r\n"
 done
