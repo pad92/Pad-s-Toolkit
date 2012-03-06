@@ -35,43 +35,8 @@ for BDD in `mysql --skip-column-names -B -e "SHOW databases;" | egrep -v "^infor
             chown mysql $DST/$BDD
         fi
         mkdir $DST/$BDD 2>/dev/null 1>&2
-        mysqldump --defaults-file=$MYCNF --opt $BDD $TABLE -T $DST/$BDD/ &
+        mysqldump --defaults-file=$MYCNF --opt $BDD $TABLE -T $DST/$BDD/ && bzip2 $DST/$BDD/$TABLE.txt &
         echo -ne "."
     done
     echo -ne "\r\n"
-done
-
-# WAITING
-echo "waiting "
-while :
-do
-    MYSQLDUMP_LEFT=$(ps a | grep mysqldump | grep -v grep | wc -l )
-    if [ "$MYSQLDUMP_LEFT" -eq "0" ]; then
-        find $DST -empty -delete
-        echo "Compressing"
-        for TXT in `find $DST -iname "*.txt" -ls`; do
-            bzip2 $TXT &
-        done
-
-        # WAITING
-        echo "compressing "
-        while :
-        do
-            MYSQLDUMP_LEFT=$(ps a | grep bzip2 | grep -v grep | wc -l )
-            if [ "$MYSQLDUMP_LEFT" -eq "0" ]; then
-                echo -ne "\r\n"
-            done
-            exit 0
-        else
-            sleep 1
-            echo -ne "."
-        fi
-    done
-    echo -ne "\r\n"
-done
-exit 0
-    else
-        sleep 1
-        echo -ne "."
-    fi
 done
