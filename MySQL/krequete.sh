@@ -1,16 +1,16 @@
-#!/usr/bin/env bash
+#!env bash
 
-for requete in $(mysql INFORMATION_SCHEMA -B -e'select id from PROCESSLIST where INFO like "select%" and TIME >= "300"'| grep -v id); do
-	/usr/bin/mysqladmin kill $requete
+for QUERY in $(mysql INFORMATION_SCHEMA --skip-column-names -B -e'select id from PROCESSLIST where INFO like "select%" and TIME >= "300"'); do
+	mysqladmin kill $QUERY
 	echo -ne "s"
 done
 
-for requete in $(mysql INFORMATION_SCHEMA -B -e'select id from PROCESSLIST where INFO like "update%" and TIME >= "300"'| grep -v id); do
-	/usr/bin/mysqladmin kill $requete
+for QUERY in $(mysql INFORMATION_SCHEMA --skip-column-names -B -e'select id from PROCESSLIST where INFO like "update%" and TIME >= "300"'); do
+	mysqladmin kill $QUERY
 	echo -ne "u"
 done
 
-for requete in $(mysql INFORMATION_SCHEMA -B -e'select id from PROCESSLIST where COMMAND like "Sleep" and TIME >= "60"'| grep -v id); do
-	/usr/bin/mysqladmin kill $requete
+for QUERY in $(mysql INFORMATION_SCHEMA --skip-column-names -B -e'select id from PROCESSLIST where COMMAND like "Sleep" and TIME >= "60"'); do
+	mysqladmin kill $QUERY
 	echo -ne "s"
 done
