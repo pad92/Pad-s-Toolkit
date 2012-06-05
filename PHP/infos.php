@@ -3,8 +3,8 @@
         <meta name="author" content="Alterwat Hosting">
         <meta name="generator" content="vim">
         <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
-	<title><?php echo exec('hostname -f'); ?></title>
-	<style>
+    <title><?php echo exec('hostname -f'); ?></title>
+    <style>
 body {
     color: #FF0099;
     background: #ffddcc;
@@ -77,7 +77,7 @@ table {
     margin: 20px auto;
 }
 
-	</style>
+    </style>
 
 </head>
 <body>
@@ -86,11 +86,11 @@ table {
         <div class="div-table">
 <?php
 function arraytolower($array,$round = 0){
-    foreach($array as $key => $value){
-        if(is_array($value)) $array[strtolower($key)] =  $this->arraytolower($value,$round+1);
-        else $array[strtolower($key)] = strtolower($value);
-    }
-    return $array;
+   foreach($array as $key => $value){
+      if(is_array($value)) $array[strtolower($key)] =  $this->arraytolower($value,$round+1);
+      else $array[strtolower($key)] = strtolower($value);
+   }
+   return $array;
 }
 
 echo '<h1>Current PHP version: '.phpversion().' on <i>'.exec('hostname -f')."</i></h1>";
@@ -102,7 +102,7 @@ $count = count($array);
 
 echo "<h2>PHP Loaded Extentions :</h2><ul>";
 for ($i = 0; $i < $count; $i++) {
-    echo "<li>{$array[$i]}</li>";
+   echo "<li>{$array[$i]}</li>";
 }
 echo "</ul></p>";
 ?>
