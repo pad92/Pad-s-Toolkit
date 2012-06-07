@@ -5,7 +5,7 @@ MYCNF='/etc/mysql/debian.cnf'
 
 BIN_DEPS='bzip2 mysql mysqldump'
 DATE=$(date '+%Y%m%d')
-DATEOLD=$(date '+%Y%m%d –date ’1 weeks ago’')
+DATEOLD=$(date --date='1 week ago' +%Y%m%d)
 DST=$BCKDIR/$DATE
 DSTOLD=$BCKDIR/$DATEOLD
 
