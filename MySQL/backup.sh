@@ -42,7 +42,7 @@ for BDD in `mysql --defaults-extra-file=$MYCNF --skip-column-names -B -e "SHOW d
         f_log "  ** Dump $BDD.$TABLE"
         mysqldump --defaults-file=$MYCNF -T $DST/$BDD/ $BDD $TABLE
         f_log "  ** bzip2 $BDD.$TABLE in background"
-        bzip2 $DST/$BDD/$TABLE.txt &
+        chmod 750 $DST/$BDD/$TABLE.*; chown root:root $DST/$BDD/$TABLE.*; bzip2 $DST/$BDD/$TABLE.txt &
     done
 done
 f_log "** END **"
