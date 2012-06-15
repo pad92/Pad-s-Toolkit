@@ -29,7 +29,7 @@ fi
 for QUERY_ID in $(mysql --defaults-extra-file=$MYCNF --skip-column-names -B -e 'SELECT id FROM information_schema.processlist WHERE INFO LIKE "SELECT%" and TIME >= "300"'); do
     f_log "* kill SELECT query $QUERY_ID"
     f_log $(mysql --defaults-extra-file=$MYCNF --skip-column-names -B -e "SELECT Info FROM information_schema.processlist WHERE id = $QUERY_ID")
-    mysqladmin kill $QUERY_ID
+    mysqladmin --defaults-extra-file=$MYCNF kill $QUERY_ID
 done
 
 # Kill update >= 5min
