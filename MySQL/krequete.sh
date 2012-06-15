@@ -1,5 +1,9 @@
 #!/usr/bin/env sh
 
+##
+# Don't work with MySQL 4.x
+# ( Use information_schema database )
+
 MYCNF='/root/.my.cnf'
 BIN_DEPS='mysql mysqladmin'
 
@@ -39,7 +43,14 @@ for QUERY_ID in $(mysql --defaults-extra-file=$MYCNF --skip-column-names -B -e '
     mysqladmin --defaults-extra-file=$MYCNF kill $QUERY_ID
 done
 
-# Kil sleep >= 1min
+# Kill insert >= 5min
+for QUERY_ID in $(mysql --defaults-extra-file=$MYCNF --skip-column-names -B -e 'SELECT id FROM information_schema.processlist WHERE INFO LIKE "insert%" and TIME >= "300"'); do
+    f_log "* kill INSERT query $QUERY_ID"
+    f_log $(mysql --defaults-extra-file=$MYCNF --skip-column-names -B -e "SELECT Info FROM information_schema.processlist WHERE id = $QUERY_ID")
+    mysqladmin --defaults-extra-file=$MYCNF kill $QUERY_ID
+done
+
+# Kill sleep >= 1min
 for QUERY_ID in $(mysql --defaults-extra-file=$MYCNF --skip-column-names -B -e 'SELECT id FROM information_schema.processlist WHERE COMMAND LIKE "Sleep" and TIME >= "60"'); do
     f_log "* kill SLEEP query $QUERY_ID"
     mysqladmin --defaults-extra-file=$MYCNF kill $QUERY_ID
