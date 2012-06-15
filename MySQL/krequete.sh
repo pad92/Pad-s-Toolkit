@@ -13,8 +13,8 @@ done
 
 # === FUNCTION ===
 f_log() {
-    logger "$0 - $@"
-    echo -e "$@"
+    logger "$0 - $*"
+    echo  "$*"
 }
 
 mysqladmin --defaults-extra-file=$MYCNF status 1>/dev/null 2>&1
