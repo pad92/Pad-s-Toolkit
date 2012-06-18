@@ -29,23 +29,10 @@ else
     f_log $(mysqladmin --defaults-extra-file=$MYCNF status)
 fi
 
+## KILL ###
 # Kill select >= 5min
 for QUERY_ID in $(mysql --defaults-extra-file=$MYCNF --skip-column-names -B -e 'SELECT id FROM information_schema.processlist WHERE INFO LIKE "SELECT%" and TIME >= "300"'); do
     f_log "* kill SELECT query $QUERY_ID"
-    f_log $(mysql --defaults-extra-file=$MYCNF --skip-column-names -B -e "SELECT user,host,info FROM information_schema.processlist WHERE id = $QUERY_ID")
-    mysqladmin --defaults-extra-file=$MYCNF kill $QUERY_ID
-done
-
-# Kill update >= 5min
-for QUERY_ID in $(mysql --defaults-extra-file=$MYCNF --skip-column-names -B -e 'SELECT id FROM information_schema.processlist WHERE INFO LIKE "update%" and TIME >= "300"'); do
-    f_log "* kill UPDATE query $QUERY_ID"
-    f_log $(mysql --defaults-extra-file=$MYCNF --skip-column-names -B -e "SELECT user,host,info FROM information_schema.processlist WHERE id = $QUERY_ID")
-    mysqladmin --defaults-extra-file=$MYCNF kill $QUERY_ID
-done
-
-# Kill insert >= 5min
-for QUERY_ID in $(mysql --defaults-extra-file=$MYCNF --skip-column-names -B -e 'SELECT id FROM information_schema.processlist WHERE INFO LIKE "insert%" and TIME >= "300"'); do
-    f_log "* kill INSERT query $QUERY_ID"
     f_log $(mysql --defaults-extra-file=$MYCNF --skip-column-names -B -e "SELECT user,host,info FROM information_schema.processlist WHERE id = $QUERY_ID")
     mysqladmin --defaults-extra-file=$MYCNF kill $QUERY_ID
 done
@@ -54,4 +41,17 @@ done
 for QUERY_ID in $(mysql --defaults-extra-file=$MYCNF --skip-column-names -B -e 'SELECT id FROM information_schema.processlist WHERE COMMAND LIKE "Sleep" and TIME >= "60"'); do
     f_log "* kill SLEEP query $QUERY_ID"
     mysqladmin --defaults-extra-file=$MYCNF kill $QUERY_ID
+done
+
+### LOG ###
+# log update >= 5min
+for QUERY_ID in $(mysql --defaults-extra-file=$MYCNF --skip-column-names -B -e 'SELECT id FROM information_schema.processlist WHERE INFO LIKE "update%" and TIME >= "300"'); do
+    f_log "* UPDATE query $QUERY_ID >= 5min :"
+    f_log $(mysql --defaults-extra-file=$MYCNF --skip-column-names -B -e "SELECT user,host,info FROM information_schema.processlist WHERE id = $QUERY_ID")
+done
+
+# log insert >= 5min
+for QUERY_ID in $(mysql --defaults-extra-file=$MYCNF --skip-column-names -B -e 'SELECT id FROM information_schema.processlist WHERE INFO LIKE "insert%" and TIME >= "300"'); do
+    f_log "* INSERT query $QUERY_ID >= 5min"
+    f_log $(mysql --defaults-extra-file=$MYCNF --skip-column-names -B -e "SELECT user,host,info FROM information_schema.processlist WHERE id = $QUERY_ID")
 done
