@@ -35,9 +35,16 @@ if [ $RETVAL = 0 ]; then
         grep -q $ERROR $TMP_FILE
         if [[ $? -eq 0 ]] ; then
             f_log $(grep $ERROR $TMP_FILE)
-            $SERVICE_RESTART stop 1>/dev/null
+            for SERVICE_STOP in SERVICE_RESTART; do
+                f_log "stop $SERVICE_STOP"
+                $SERVICE_STOP stop 1>/dev/null
+            done
             sleep 5
-            $SERVICE_RESTART start 1>/dev/null
+            for SERVICE_START in SERVICE_RESTART; do
+                f_log "start $SERVICE_START"
+                $SERVICE_START start 1>/dev/null
+                sleep 1
+            done
             rm $TMP_FILE
             exit 1
         fi
