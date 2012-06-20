@@ -34,10 +34,10 @@ if [ $RETVAL = 0 ]; then
     for ERROR in $ERROR_LIST; do
         grep -q $ERROR $TMP_FILE
         if [[ $? -eq 0 ]] ; then
-            f_log $(grep $TMP_FILE)
-            $SERVICE_RESTART stop
+            f_log $(grep $ERROR $TMP_FILE)
+            $SERVICE_RESTART stop 1>/dev/null
             sleep 5
-            $SERVICE_RESTART start
+            $SERVICE_RESTART start 1>/dev/null
             rm $TMP_FILE
             exit 1
         fi
