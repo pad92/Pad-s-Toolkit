@@ -43,8 +43,19 @@ for BDD in `mysql --defaults-extra-file=$MYCNF --skip-column-names -B -e "SHOW d
         chown mysql:mysql $DST/$BDD
         f_log "  ** Dump $BDD.$TABLE"
         mysqldump --defaults-file=$MYCNF -T $DST/$BDD/ $BDD $TABLE
-        f_log "  ** bzip2 $BDD.$TABLE in background"
-        chmod 750 $DST/$BDD/$TABLE.*; chown root:root $DST/$BDD/$TABLE.*; bzip2 $DST/$BDD/$TABLE.txt &
+        if [ -f "$DST/$BDD/$TABLE.sql" ]; then
+            chmod 750 $DST/$BDD/$TABLE.sql
+            chown root:root $DST/$BDD/$TABLE.sql
+            f_log "  ** set perm on $BDD/$TABLE.sql"
+        else
+            f_log "  ** WARNING : $DST/$BDD/$TABLE.sql not found"
+        fi
+        if [ -f "$DST/$BDD/$TABLE.txt" ]; then
+            f_log "  ** bzip2 $BDD/$TABLE.txt in background"
+            bzip2 $DST/$BDD/$TABLE.txt &
+        else
+            f_log "  ** WARNING : $DST/$BDD/$TABLE.txt not found"
+        fi
     done
 done
 f_log "** END **"
