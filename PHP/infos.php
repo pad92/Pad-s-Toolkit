@@ -1,113 +1,54 @@
+<!DOCTYPE html>
 <html lang="fr">
     <head>
-        <meta name="author" content="Alterwat Hosting">
+        <title><?php echo exec('hostname -f'); ?></title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="author" content="Pascal A.">
         <meta name="generator" content="vim">
         <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
-    <title><?php echo exec('hostname -f'); ?></title>
-    <style>
-body {
-    color: #FF0099;
-    background: #ffddcc;
-    font: 300 16px/1.5 "Helvetica Neue", sans-serif;
-    font-family: 'Helvetica Neue', sans-serif;
-    font-size: 16px;
-    font-style: normal;
-    font-variant: normal;
-    font-weight: 300;
-    line-height: 1.5;
-    text-align: left;
-}
-h1, h2 {
-    text-shadow: #2E2E2E 1px 1px 1px;
-}
+        <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css" rel="stylesheet">
+        <style>
+            body {
+                padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+            }
+        </style>
+        <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+        <!--[if lt IE 9]>
+        <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+    </head>
+    <body>
+        <div class="container">
+            <div class="page-header">
+                <h1 class="pagination-centered">Current PHP version: <?php echo phpversion(); ?> on <i> <?php echo exec('hostname -f'); ?></i></h1>
+            </div>
 
-h1 {
-    font-size: 140%;
-}
+        <?php
+        function arraytolower($array,$round = 0){
+            foreach($array as $key => $value){
+                if(is_array($value)) $array[strtolower($key)] =  $this->arraytolower($value,$round+1);
+                else $array[strtolower($key)] = strtolower($value);
+            }
+            return $array;
+        }
 
-h2 {
-    font-size: 120%;
-}
+        $array = get_loaded_extensions();
+        $array = arraytolower($array);
+        sort($array);
+        $count = count($array);
+        ?>
 
-a, a:visited, .disqus-wrapper a, #builder a.selected, #footer a.announcements {
-    color: #E16734;
-    text-decoration: none;
-    text-shadow: 2px 2px 0px black;
-}
-a:hover, a:focus {
-    text-decoration: none;
-    color: #E16734;
-    text-shadow: 1px 1px 0px black;
-}
-
-caption {
-    margin: 0.25em auto 0;
-    font-size: 18px;
-    font-weight: bold;
-    text-align: left;
-    margin-bottom: 10px;
-    text-shadow: 1px 1px 0px black, 2px 2px 0px #434343, 3px 3px 0px #434343;
-}
-ul, ol {
-    margin: 1em 0;
-}
-ul, menu, dir {
-    display: block;
-}
-
-.div-table{
-    background: #FFFFFF;
-    display: table;
-    *border-collapse: collapse; /* IE7 and lower */
-    border-spacing: 10px;
-    margin: 10px auto;
-    border-radius: 15px;
-    border: 1px solid black;
-}
-pre, code, kbd, samp {
-    font-family: monospace, serif; _font-family: 'courier new', monospace;
-    font-size: 0.8em;
-    padding: 5px;
-    text-align:left;
-
-}
-table {
-    *border-collapse: collapse; /* IE7 and lower */
-    border-spacing: 0;
-    margin: 20px auto;
-}
-
-    </style>
-
-</head>
-<body>
-
-<section id="content" class="body">
-        <div class="div-table">
-<?php
-function arraytolower($array,$round = 0){
-   foreach($array as $key => $value){
-      if(is_array($value)) $array[strtolower($key)] =  $this->arraytolower($value,$round+1);
-      else $array[strtolower($key)] = strtolower($value);
-   }
-   return $array;
-}
-
-echo '<h1>Current PHP version: '.phpversion().' on <i>'.exec('hostname -f')."</i></h1>";
-
-$array = get_loaded_extensions();
-$array = arraytolower($array);
-sort($array);
-$count = count($array);
-
-echo "<h2>PHP Loaded Extentions :</h2><ul>";
-for ($i = 0; $i < $count; $i++) {
-   echo "<li>{$array[$i]}</li>";
-}
-echo "</ul></p>";
-?>
+            <div class="hero-unit">
+                <h2>PHP Loaded Extentions </h2>
+                <?php
+                echo "<ul>";
+                for ($i = 0; $i < $count; $i++) {
+                    echo "<li>{$array[$i]} ".phpversion($array[$i])."</li>";
+                }
+                echo "</ul>";
+                ?>
+            </div>
         </div>
-    </section>
-
-</body>
+        <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/js/bootstrap.min.js"></script>
+    </body>
 </html>
