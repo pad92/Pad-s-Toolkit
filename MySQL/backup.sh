@@ -34,7 +34,7 @@ f_log() {
 f_log "** START **"
 for BDD in `mysql --defaults-extra-file=$MYCNF --skip-column-names -B -e "SHOW databases;" | egrep -v "^information_schema$|^performance_schema$"`; do
     f_log "* Processing BDD $BDD"
-    mysql --defaults-extra-file=$MYCNF --skip-column-names -B -e "SHOW CREATE DATABASE \`$BDD\`;" | cut -d" " -f2- > $DST/$BDD-create.sql
+    mysql --defaults-extra-file=$MYCNF --skip-column-names -B -e "SHOW CREATE DATABASE \`$BDD\`;" | awk -F"\t" '{ print $2 }' > $DST/$BDD-create.sql
     f_log "  > Export 'SHOW CREATE TABLE'"
     mysqldump --routines --no-create-info --no-data --no-create-db --skip-opt $BDD > $DST/$BDD-routines.sql
     f_log "  > Exports Routines"
