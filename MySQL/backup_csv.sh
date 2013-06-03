@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 #
-# Reference : https://raw.github.com/pad92/Pad-s-Toolkit/master/MySQL/backup.sh
+# Reference : https://raw.github.com/pad92/Pad-s-Toolkit/master/MySQL/backup_csv.sh
 
 # === CONFIG ===
 BCKDIR='/var/backup/mysql'
@@ -36,9 +36,9 @@ for BDD in `mysql --defaults-extra-file=$MYCNF --skip-column-names -B -e "SHOW d
     f_log "* Processing BDD $BDD"
     mysql --defaults-extra-file=$MYCNF --skip-column-names -B -e "SHOW CREATE DATABASE \`$BDD\`;" | awk -F"\t" '{ print $2 }' > $DST/$BDD-create.sql
     f_log "  > Export 'SHOW CREATE TABLE'"
-    mysqldump --routines --no-create-info --no-data --no-create-db --skip-opt $BDD > $DST/$BDD-routines.sql
+    mysqldump --defaults-extra-file=$MYCNF --routines --no-create-info --no-data --no-create-db --skip-opt $BDD > $DST/$BDD-routines.sql
     f_log "  > Exports Routines"
-    for TABLE in `mysql --skip-column-names -B $BDD -e "SHOW TABLES;" | grep -v slow_log | grep -v general_log`; do
+    for TABLE in `mysql --defaults-extra-file=$MYCNF --skip-column-names -B $BDD -e "SHOW TABLES;" | grep -v slow_log | grep -v general_log`; do
         mkdir -p $DST/$BDD 2>/dev/null 1>&2
         chown mysql:mysql $DST/$BDD
         f_log "  ** Dump $BDD.$TABLE"
