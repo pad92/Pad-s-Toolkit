@@ -1,0 +1,88 @@
+FORTI PARSER v1.01
+
+Codé par Mathieu GAMIN
+
+Présentation :
+
+Ce script a pour but original de créer une matrice de flux au format .csv à partir d'un fichier de configuration FortiGate.
+
+Il a été créé et testé pour un FortiGate 3600 sous Forti OS v.4 MR2 Patch7 sans VDOM.
+
+##################################################################################################
+##################################################################################################
+##################################################################################################
+
+A faire :
+  - Tester la présence de flux dans le fichier
+  - Tester la version du Firmware
+  - Implémenter des entrées et sorties par défaut
+  - Implémenter une sortie autre que le fichier
+  - Implémenter la gestion de filtres
+  - Coder un comportement pour les fichiers des autres versions de firmware
+  - Coder le comportement en cas de présence de VDOMs
+
+Changelog v1.02:
+  -Possibilité de spécifier les fichiers d'entrée et de sortie si ce n'est pas fait en argument lors du lancement du script
+Changelog v1.01:
+  -Support de "set status" dans les règles firewall
+
+##################################################################################################
+##################################################################################################
+##################################################################################################
+
+Fonctionnement :
+
+Le script récupère un fichier de configuration FortiGate pour créer un .csv (.sylk) avec une première ligne d'en-tête.
+
+Options de lancement :
+
+perl fortiparser.pl [FICHIER SOURCE] [FICHIER DESTINATION]
+
+[FICHIER SOURCE] :
+    Testé avec les versions de firmware de la liste de compatibilité, le script récupère, en fait, uniquement la partie "firewalling" du fichier ("config firewall policy").
+
+[FICHIER DESTINATION] :
+    Le fichier destination retourne les champs de chaque flux déclaré séparés par des virgules.
+    Un champ à valeur multiple voit ses valeurs séparées par des espaces.
+    Les guillemets sont retirés pour une meilleure lisibilité et manipulation.
+
+    Si le fichier n'existe pas, il sera créé. Mais le dossier, doit être existant.
+
+##################################################################################################
+##################################################################################################
+##################################################################################################
+
+Exemples :
+
+Le fichier contenant les lignes suivantes est traité par le script :
+
+        config firewall policy
+            edit 8
+                set srcintf "port1"
+                set dstintf "wan1"
+                    set srcaddr "PC_prob"
+                    set dstaddr "all"
+                set action accept
+                set logtraffic enable
+                set schedule "always"
+                    set service "ANY"
+                set nat enable
+            next
+            edit 1
+                set srcintf "port1"
+                set dstintf "wan1"
+                    set srcaddr "all"
+                    set dstaddr "all"
+                set action accept
+                set logtraffic enable
+                set schedule "always"
+                    set service "ANY"
+            next
+        end
+
+Le retour du script dans le fichier destination sera :
+
+        ID,Status,Source interface,Destination interface,Sources addresses,Destination addresses,Services,Action,Logging,Schedule,Label,NAT,IP pool,Pool name,UTM-status,IPS-sensor,Webfilter-profile,AV-profile,Application-list,Profile-protocol-option
+        8,enable,port1,wan1,PC_prob,all,ANY,accept,enable,always,,enable,,,,,,,,
+        1,enable,port1,wan1,all,all,ANY,accept,enable,always,,,,,,,,,,
+
