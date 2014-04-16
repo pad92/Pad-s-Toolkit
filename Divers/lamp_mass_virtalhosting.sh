@@ -2,20 +2,25 @@
 
 ### Config
 WWW_ROOT='/var/www/massvhosts'
+WWW_OWNER='ftpuser'
 MYSQL_ROOT='/etc/mysql/debian.cnf'
 
 ### Functions
 vhost_create() {
     echo '=> Apache'
     echo "-  Création des dossiers $MYSQL_ROOT/$2/{www,cgi-bin,logs}"
-    mkdir -p $WWW_ROOT/$2/{www,cgi-bin,logs}
+    mkdir -p $WWW_ROOT/$2/{www,cgi-bin}
+    chown -R  $WWW_OWNER $WWW_ROOT/$2/{www,cgi-bin}
 }
 
 mysql_create() {
     echo '=> MySQL'
     MYSQL_PASSWD=$(pwgen 16 1)
     echo '-  Create database'
+    mysql -e "create database $MYSQL_BDD"
     echo '-  Create database account'
+    mysql -e "GRANT USAGE ON *.* TO '$MYSQL_USER'@'localhost' IDENTIFIED BY '$MYSQL_PASSWD';"
+    mysql -e "GRANT ALL PRIVILEGES ON `$MYSQL_USER`.* TO 'ftp'@'localhost' WITH GRANT OPTION;"
     echo "-  Utilisateur    : $MYSQL_USER"
     echo "-  Mot de passe   : $MYSQL_PASSWD"
     echo "-  Base de donnée : $MYSQL_BDD"
@@ -55,13 +60,15 @@ ftp_create() {
     echo "=> FTP"
     FTP_PASSWD=$(pwgen 16 1)
     echo "-  Créer compte pour $2"
+    mysql ftp -e "INSERT INTO `ftpuser` (`id`, `userid`, `passwd`, `uid`, `gid`, `homedir`, `shell`, `count`, `accessed`, `modified`) VALUES ('', '$FTP_USER', ENCRYPT('$FTP_PASSWD'), 2001, 2001, '/var/www/massvhosts/$FTP_USER/www', '/sbin/nologin', 0, '', '');"
     echo "-  Utilisateur  : $FTP_USER"
     echo "-  Mot de passe : $FTP_PASSWD"
 }
 
 ftp_delete() {
     echo "=> FTP"
-    echo "-  Suppretion du compte pour $2"
+    mysql ftp -e "DELETE FROM `ftpuser` WHERE userid = $FTP_USER;"
+    echo "-  Suppression du compte pour $2"
 }
 
 usage() {
