@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 #
-# Reference : https://raw.github.com/pad92/Pad-s-Toolkit/master/MySQL/backup_sql.sh
+# Reference : http://git.depad.fr/pascal/pad-s-toolkit/raw/master/MySQL/backup_sql.sh
 
 # === CONFIG ===
 BCKDIR='/var/backup/mysql'
