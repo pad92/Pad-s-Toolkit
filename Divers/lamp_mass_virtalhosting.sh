@@ -1,18 +1,23 @@
 #!/usr/bin/env sh -x
 
-### Config
+#{{{ Config
 WWW_ROOT='/var/www/massvhosts'
 WWW_OWNER='ftpuser'
 MYSQL_ROOT='/etc/mysql/debian.cnf'
+#}}}
 
-### Functions
+#{{{ Functions
+# {{{ Create
+#  {{{ Vhost
 vhost_create() {
     echo '=> Apache'
     echo "-  Création des dossiers $MYSQL_ROOT/$2/{www,cgi-bin,logs}"
     mkdir -p $WWW_ROOT/$2/{www,cgi-bin}
     chown -R  $WWW_OWNER $WWW_ROOT/$2/{www,cgi-bin}
 }
+#  }}}
 
+#  {{{ MySQL
 mysql_create() {
     echo '=> MySQL'
     MYSQL_PASSWD=$(pwgen 16 1)
@@ -25,18 +30,22 @@ mysql_create() {
     echo "-  Mot de passe   : $MYSQL_PASSWD"
     echo "-  Base de donnée : $MYSQL_BDD"
 }
+#  }}}
 
-vhost_alias() {
-    echo '=> Apache'
-    echo '-  create Vhost alias'
-    if [ -d "$WWW_ROOT/$2/" ]; then
-        ln -s $WWW_ROOT/$2 $WWW_ROOT/$3 || echo "erreur lors de l'execution de ln -s $WWW_ROOT/$2 $WWW_ROOT/$3 vérifier la source et déstination" && exit 1
-        echo "-  $3 pointe sur $2"
-    else
-        echo "- ERREUR : $WWW_ROOT/$2/ n'existe pas"
-    fi
+#  {{{ FTP
+ftp_create() {
+    echo "=> FTP"
+    FTP_PASSWD=$(pwgen 16 1)
+    echo "-  Créer compte pour $2"
+    mysql ftp -e "INSERT INTO `ftpuser` (`id`, `userid`, `passwd`, `uid`, `gid`, `homedir`, `shell`, `count`, `accessed`, `modified`) VALUES ('', '$FTP_USER', ENCRYPT('$FTP_PASSWD'), 2001, 2001, '/var/www/massvhosts/$FTP_USER/www', '/sbin/nologin', 0, '', '');"
+    echo "-  Utilisateur  : $FTP_USER"
+    echo "-  Mot de passe : $FTP_PASSWD"
 }
+#  }}}
+# }}}
 
+# {{{ Delete
+#  {{{ Vhost
 vhost_delete() {
     echo '=> Apache'
     if [ -d "$WWW_ROOT/$2/" ]; then
@@ -49,28 +58,39 @@ vhost_delete() {
         exit 1
     fi
 }
+#  }}}
 
+#  {{{ MySQL
 mysql_delete() {
     echo '=> MySQL'
     echo "-  Archive BDD $2"
     echo "-  Efface BDD $2"
 }
+#  }}}
 
-ftp_create() {
-    echo "=> FTP"
-    FTP_PASSWD=$(pwgen 16 1)
-    echo "-  Créer compte pour $2"
-    mysql ftp -e "INSERT INTO `ftpuser` (`id`, `userid`, `passwd`, `uid`, `gid`, `homedir`, `shell`, `count`, `accessed`, `modified`) VALUES ('', '$FTP_USER', ENCRYPT('$FTP_PASSWD'), 2001, 2001, '/var/www/massvhosts/$FTP_USER/www', '/sbin/nologin', 0, '', '');"
-    echo "-  Utilisateur  : $FTP_USER"
-    echo "-  Mot de passe : $FTP_PASSWD"
-}
-
+#  {{{ FTP
 ftp_delete() {
     echo "=> FTP"
     mysql ftp -e "DELETE FROM `ftpuser` WHERE userid = $FTP_USER;"
     echo "-  Suppression du compte pour $2"
 }
+#  }}}
+# }}}
 
+# {{{ Vhost Alias
+vhost_alias() {
+    echo '=> Apache'
+    echo '-  create Vhost alias'
+    if [ -d "$WWW_ROOT/$2/" ]; then
+        ln -s $WWW_ROOT/$2 $WWW_ROOT/$3 || echo "erreur lors de l'execution de ln -s $WWW_ROOT/$2 $WWW_ROOT/$3 vérifier la source et déstination" && exit 1
+        echo "-  $3 pointe sur $2"
+    else
+        echo "- ERREUR : $WWW_ROOT/$2/ n'existe pas"
+    fi
+}
+# }}}
+
+# {{{ Usage
 usage() {
     echo "Usage : $(basename $0) [action]"
     echo "                       create [fqdn]"
@@ -78,14 +98,19 @@ usage() {
     echo "                       alias  [fqdn] -> [fqdn]"
     exit 1
 }
+# }}}
+#}}}
 
-### Check
+#{{{ Checks
+# {{{ Arguments
 ## Au minimum deux parametre (action et domaine)
 if [ "$@" -lt "2" ]; then
     usage
 fi
+# }}}
 
 ## check des binaires necessaires
+# {{{ Binaires
 BIN_DEPS='apache2ctl mysql pwgen'
 for BIN in $BIN_DEPS; do
     which $BIN 1>/dev/null 2>&1
@@ -94,8 +119,10 @@ for BIN in $BIN_DEPS; do
        # exit 1
     fi
 done
+# }}}
+#}}}
 
-### Core
+#{{{ Core
 case $1 in
     create )
         vhost_create
@@ -108,3 +135,4 @@ case $1 in
     * )
         usage ;;
 esac
+#}}}
