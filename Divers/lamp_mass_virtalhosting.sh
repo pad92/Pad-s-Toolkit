@@ -1,15 +1,17 @@
-#!/usr/bin/env sh -x
+#!/usr/bin/env sh
 
 #{{{ Config
 WWW_ROOT='/var/www/massvhosts'
+SITE_NAME='$2'
 ARCHIVE_DIR='/var/www/archives'
 WWW_OWNER='ftpuser'
-MYSQL_ROOT='/etc/mysql/debian.cnf'
+MYSQL_AUTH='/etc/mysql/debian.cnf'
 
 DATE_NOW=$(date +'%Y%m%d-%H%M')
-MYSQL_BDD=$(echo $2 | sed 's/www\.//' | cut -c1-16 )
-MYSQL_USER=$MYSQL_BDD
-FTP_USER=$(echo $2 | sed 's/www\.//' | cut -c1-16 )
+SITENAME=$(echo $SITE_NAME | sed 's/www\.//g' | sed 's/recette\.//g' | sed 's/\.croix-rouge.fr//g' | sed 's/\./-/g' | cut -c1-16 )
+MYSQL_BDD=$SITENAME
+MYSQL_USER=$SITENAME
+FTP_USER=$SITENAME
 #}}}
 
 #{{{ Functions
@@ -17,9 +19,11 @@ FTP_USER=$(echo $2 | sed 's/www\.//' | cut -c1-16 )
 #  {{{ Vhost
 vhost_create() {
     echo '=> Apache'
-    echo "-  Création des dossiers $MYSQL_ROOT/$2/{www,cgi-bin}"
-    mkdir -p $WWW_ROOT/$2/{www,cgi-bin}
-    chown -R  $WWW_OWNER $WWW_ROOT/$2/{www,cgi-bin}
+    echo "-  Création des dossiers $WWW_ROOT/$SITE_NAME/{www,cgi-bin}"
+    mkdir -p $WWW_ROOT/$SITE_NAME/www
+    mkdir -p $WWW_ROOT/$SITE_NAME/cgi-bin
+    chown -R  $WWW_OWNER $WWW_ROOT/$SITE_NAME/www
+    chown -R  $WWW_OWNER $WWW_ROOT/$SITE_NAME/cgi-bin
 }
 #  }}}
 
@@ -31,7 +35,7 @@ mysql_create() {
     mysql -e "create database $MYSQL_BDD"
     echo '-  Create database account'
     mysql -e "GRANT USAGE ON *.* TO '$MYSQL_USER'@'localhost' IDENTIFIED BY '$MYSQL_PASSWD';"
-    mysql -e "GRANT ALL PRIVILEGES ON `$MYSQL_USER`.* TO 'ftp'@'localhost' WITH GRANT OPTION;"
+    mysql -e "GRANT ALL PRIVILEGES ON $MYSQL_USER.* TO 'ftp'@'localhost' WITH GRANT OPTION;"
     echo "-  Utilisateur    : $MYSQL_USER"
     echo "-  Mot de passe   : $MYSQL_PASSWD"
     echo "-  Base de donnée : $MYSQL_BDD"
@@ -42,8 +46,8 @@ mysql_create() {
 ftp_create() {
     echo "=> FTP"
     FTP_PASSWD=$(pwgen 16 1)
-    echo "-  Créer compte pour $2"
-    mysql ftp -e "INSERT INTO `ftpuser` (`id`, `userid`, `passwd`, `uid`, `gid`, `homedir`, `shell`, `count`, `accessed`, `modified`) VALUES ('', '$FTP_USER', ENCRYPT('$FTP_PASSWD'), 2001, 2001, '/var/www/massvhosts/$FTP_USER/www', '/sbin/nologin', 0, '', '');"
+    echo "-  Créer compte pour $SITE_NAME"
+    mysql ftp -e "INSERT INTO ftpuser (id, userid, passwd, uid, gid, homedir, shell, count, accessed, modified) VALUES ('', '$FTP_USER', ENCRYPT('$FTP_PASSWD'), 2001, 2001, '/var/www/massvhosts/$FTP_USER/www', '/sbin/nologin', 0, '', '');"
     echo "-  Utilisateur  : $FTP_USER"
     echo "-  Mot de passe : $FTP_PASSWD"
 }
@@ -54,13 +58,13 @@ ftp_create() {
 #  {{{ Vhost
 vhost_delete() {
     echo '=> Apache'
-    if [ -d "$WWW_ROOT/$2/" ]; then
-        echo "-  Archive $2"
-        tar cpzf $ARCHIVE_DIR/$2-$DATE_NOW.tar.gz $WWW_ROOT/$2/
-        echo "-  Efface $WWW_ROOT/$2"
-        rm -fr $WWW_ROOT/$2/
+    if [ -d "$WWW_ROOT/$SITE_NAME/" ]; then
+        echo "-  Archive $SITE_NAME"
+        tar cpzf $ARCHIVE_DIR/$SITE_NAME-$DATE_NOW.tar.gz $WWW_ROOT/$SITE_NAME/
+        echo "-  Efface $WWW_ROOT/$SITE_NAME"
+        rm -fr $WWW_ROOT/$SITE_NAME/
     else
-        echo "- ERREUR : $WWW_ROOT/$2/ n'existe pas"
+        echo "- ERREUR : $WWW_ROOT/$SITE_NAME/ n'existe pas"
         exit 1
     fi
 }
@@ -95,11 +99,11 @@ ftp_delete() {
 vhost_alias() {
     echo '=> Apache'
     echo '-  create Vhost alias'
-    if [ -d "$WWW_ROOT/$2/" ]; then
-        ln -s $WWW_ROOT/$2 $WWW_ROOT/$3 || echo "erreur lors de l'execution de ln -s $WWW_ROOT/$2 $WWW_ROOT/$3 vérifier la source et déstination" && exit 1
-        echo "-  $3 pointe sur $2"
+    if [ -d "$WWW_ROOT/$SITE_NAME/" ]; then
+        ln -s $WWW_ROOT/$SITE_NAME $WWW_ROOT/$3 || echo "erreur lors de l'execution de ln -s $WWW_ROOT/$SITE_NAME $WWW_ROOT/$3 vérifier la source et déstination" && exit 1
+        echo "-  $3 pointe sur $SITE_NAME"
     else
-        echo "- ERREUR : $WWW_ROOT/$2/ n'existe pas"
+        echo "- ERREUR : $WWW_ROOT/$SITE_NAME/ n'existe pas"
     fi
 }
 # }}}
@@ -118,7 +122,7 @@ usage() {
 #{{{ Checks
 # {{{ Arguments
 ## Au minimum deux parametre (action et domaine)
-if [ "$@" -lt "2" ]; then
+if [ "$#" -lt "2" ]; then
     usage
 fi
 # }}}
@@ -130,7 +134,7 @@ for BIN in $BIN_DEPS; do
     which $BIN 1>/dev/null 2>&1
     if [ $? -ne 0 ]; then
         echo "Error: Required file could not be found: $BIN \r\n apt-get install $BIN ? :)"
-       # exit 1
+        exit 1
     fi
 done
 # }}}
