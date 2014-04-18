@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 #
-# Reference : https://raw.github.com/pad92/Pad-s-Toolkit/master/MySQL/backup_sql.sh
+# Reference : http://git.depad.fr/pascal/pad-s-toolkit/raw/master/MySQL/backup_sql.sh
 
 # === CONFIG ===
 BCKDIR='/var/backup/mysql'
@@ -41,7 +41,7 @@ for BDD in `mysql --defaults-extra-file=$MYCNF --skip-column-names -B -e "SHOW d
         mkdir -p $DST/$BDD 2>/dev/null 1>&2
         chown mysql:mysql $DST/$BDD
         f_log "  ** Dump $BDD.$TABLE"
-        mysqldump --defaults-file=$MYCNF $BDD $TABLE > "$DST"/"$BDD"/"$TABLE".sql
+        mysqldump --defaults-file=$MYCNF --single-transaction $BDD $TABLE > "$DST"/"$BDD"/"$TABLE".sql
         if [ -f "$DST/$BDD/$TABLE.sql" ]; then
             f_log "  ** bzip2 $BDD/$TABLE.txt in background"
             bzip2 $DST/$BDD/$TABLE.sql &
