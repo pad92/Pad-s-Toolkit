@@ -2,7 +2,8 @@
 
 #{{{ Config
 WWW_ROOT='/var/www/massvhosts'
-SITE_NAME='$2'
+SITE_NAME=$2
+SITE_ALIAS=$3
 ARCHIVE_DIR='/var/www/archives'
 WWW_OWNER='ftpuser'
 MYSQL_AUTH='/etc/mysql/debian.cnf'
@@ -20,10 +21,8 @@ FTP_USER=$SITENAME
 vhost_create() {
     echo '=> Apache'
     echo "-  Création des dossiers $WWW_ROOT/$SITE_NAME/{www,cgi-bin}"
-    mkdir -p $WWW_ROOT/$SITE_NAME/www
-    mkdir -p $WWW_ROOT/$SITE_NAME/cgi-bin
-    chown -R  $WWW_OWNER $WWW_ROOT/$SITE_NAME/www
-    chown -R  $WWW_OWNER $WWW_ROOT/$SITE_NAME/cgi-bin
+    mkdir -p $WWW_ROOT/$SITE_NAME/{www,cgi-bin}
+    chown -R  $WWW_OWNER $WWW_ROOT/$SITE_NAME/{www,cgi-bin}
 }
 #  }}}
 
@@ -31,11 +30,9 @@ vhost_create() {
 mysql_create() {
     echo '=> MySQL'
     MYSQL_PASSWD=$(pwgen 16 1)
-    echo '-  Create database'
     mysql -e "create database $MYSQL_BDD"
-    echo '-  Create database account'
     mysql -e "GRANT USAGE ON *.* TO '$MYSQL_USER'@'localhost' IDENTIFIED BY '$MYSQL_PASSWD';"
-    mysql -e "GRANT ALL PRIVILEGES ON $MYSQL_USER.* TO 'ftp'@'localhost' WITH GRANT OPTION;"
+    mysql -e "GRANT ALL PRIVILEGES ON $MYSQL_USER.* TO '$MYSQL_USER'@'localhost';"
     echo "-  Utilisateur    : $MYSQL_USER"
     echo "-  Mot de passe   : $MYSQL_PASSWD"
     echo "-  Base de donnée : $MYSQL_BDD"
@@ -60,7 +57,7 @@ vhost_delete() {
     echo '=> Apache'
     if [ -d "$WWW_ROOT/$SITE_NAME/" ]; then
         echo "-  Archive $SITE_NAME"
-        tar cpzf $ARCHIVE_DIR/$SITE_NAME-$DATE_NOW.tar.gz $WWW_ROOT/$SITE_NAME/
+        tar cpPzf $ARCHIVE_DIR/$SITE_NAME-$DATE_NOW.tar.gz $WWW_ROOT/$SITE_NAME/
         echo "-  Efface $WWW_ROOT/$SITE_NAME"
         rm -fr $WWW_ROOT/$SITE_NAME/
     else
@@ -77,9 +74,6 @@ mysql_delete() {
     mysqldump --single-transaction --routines $MYSQL_BDD | bzip2 > $ARCHIVE_DIR/$FTP_USER-$DATE_NOW-sql.bz2
     echo "-  Efface BDD $MYSQL_BDD"
     mysql -e "DROP DATABASE $MYSQL_BDD";
-    echo "-  Archive du compte '$MYSQL_USER'@'localhost'"
-    mysql -e "SHOW GRANT FOR '$MYSQL_USER'@'localhost';" > $ARCHIVE_DIR/$FTP_USER-$DATE_NOW-user-mysql.txt
-    echo "-  Efface le compte '$MYSQL_USER'@'localhost'"
     mysql -e "DROP USER '$MYSQL_USER'@'localhost';"
 }
 #  }}}
@@ -87,10 +81,8 @@ mysql_delete() {
 #  {{{  FTP
 ftp_delete() {
     echo "=> FTP"
-    echo "-  Sauvegarde des informations dans $ARCHIVE_DIR/$FTP_USER-$DATE_NOW-ftp.txt"
-    mysql ftp -e "SELECT * FROM ftpuser WHERE userid = $FTP_USER;" > $ARCHIVE_DIR/$FTP_USER-$DATE_NOW-user-ftp.txt
     echo "-  Suppression du compte pour $FTP_USER"
-    mysql ftp -e "DELETE FROM ftpuser WHERE userid = $FTP_USER;"
+    mysql ftp -e "DELETE FROM ftpuser WHERE userid = '$FTP_USER';"
 }
 #  }}}
 # }}}
@@ -99,9 +91,9 @@ ftp_delete() {
 vhost_alias() {
     echo '=> Apache'
     echo '-  create Vhost alias'
-    if [ -d "$WWW_ROOT/$SITE_NAME/" ]; then
-        ln -s $WWW_ROOT/$SITE_NAME $WWW_ROOT/$3 || echo "erreur lors de l'execution de ln -s $WWW_ROOT/$SITE_NAME $WWW_ROOT/$3 vérifier la source et déstination" && exit 1
-        echo "-  $3 pointe sur $SITE_NAME"
+    if [ -d "$WWW_ROOT/$SITE_NAME" ]; then
+        ln -s $WWW_ROOT/$SITE_NAME $WWW_ROOT/$SITE_ALIAS || (echo "erreur lors de l'execution de ln -s $WWW_ROOT/$SITE_NAME $WWW_ROOT/$SITE_ALIAS vérifier la source et déstination" && exit 1)
+        echo "-  $SITE_ALIAS pointe sur $SITE_NAME"
     else
         echo "- ERREUR : $WWW_ROOT/$SITE_NAME/ n'existe pas"
     fi
@@ -153,7 +145,7 @@ case $1 in
         ftp_delete
         ;;
     alias )
-        if [ "$@" -lt "3" ]; then
+        if [ "$#" -lt "3" ]; then
             usage
         else
             vhost_alias
