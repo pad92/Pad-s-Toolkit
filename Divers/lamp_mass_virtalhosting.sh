@@ -2,8 +2,14 @@
 
 #{{{ Config
 WWW_ROOT='/var/www/massvhosts'
+ARCHIVE_DIR='/var/www/archives'
 WWW_OWNER='ftpuser'
 MYSQL_ROOT='/etc/mysql/debian.cnf'
+
+DATE_NOW=$(date +'%Y%m%d-%H%M')
+MYSQL_BDD=$(echo $2 | sed 's/www\.//' | cut -c1-16 )
+MYSQL_USER=$MYSQL_BDD
+FTP_USER=$(echo $2 | sed 's/www\.//' | cut -c1-16 )
 #}}}
 
 #{{{ Functions
@@ -11,7 +17,7 @@ MYSQL_ROOT='/etc/mysql/debian.cnf'
 #  {{{ Vhost
 vhost_create() {
     echo '=> Apache'
-    echo "-  Création des dossiers $MYSQL_ROOT/$2/{www,cgi-bin,logs}"
+    echo "-  Création des dossiers $MYSQL_ROOT/$2/{www,cgi-bin}"
     mkdir -p $WWW_ROOT/$2/{www,cgi-bin}
     chown -R  $WWW_OWNER $WWW_ROOT/$2/{www,cgi-bin}
 }
@@ -50,7 +56,7 @@ vhost_delete() {
     echo '=> Apache'
     if [ -d "$WWW_ROOT/$2/" ]; then
         echo "-  Archive $2"
-        tar cpzf $WWW_ROOT/$2.tar.gz $WWW_ROOT/$2/
+        tar cpzf $ARCHIVE_DIR/$2-$DATE_NOW.tar.gz $WWW_ROOT/$2/
         echo "-  Efface $WWW_ROOT/$2"
         rm -fr $WWW_ROOT/$2/
     else
@@ -63,16 +69,24 @@ vhost_delete() {
 #  {{{ MySQL
 mysql_delete() {
     echo '=> MySQL'
-    echo "-  Archive BDD $2"
-    echo "-  Efface BDD $2"
+    echo "-  Archive BDD $MYSQL_BDD"
+    mysqldump --single-transaction --routines $MYSQL_BDD | bzip2 > $ARCHIVE_DIR/$FTP_USER-$DATE_NOW-sql.bz2
+    echo "-  Efface BDD $MYSQL_BDD"
+    mysql -e "DROP DATABASE $MYSQL_BDD";
+    echo "-  Archive du compte '$MYSQL_USER'@'localhost'"
+    mysql -e "SHOW GRANT FOR '$MYSQL_USER'@'localhost';" > $ARCHIVE_DIR/$FTP_USER-$DATE_NOW-user-mysql.txt
+    echo "-  Efface le compte '$MYSQL_USER'@'localhost'"
+    mysql -e "DROP USER '$MYSQL_USER'@'localhost';"
 }
 #  }}}
 
-#  {{{ FTP
+#  {{{  FTP
 ftp_delete() {
     echo "=> FTP"
-    mysql ftp -e "DELETE FROM `ftpuser` WHERE userid = $FTP_USER;"
-    echo "-  Suppression du compte pour $2"
+    echo "-  Sauvegarde des informations dans $ARCHIVE_DIR/$FTP_USER-$DATE_NOW-ftp.txt"
+    mysql ftp -e "SELECT * FROM ftpuser WHERE userid = $FTP_USER;" > $ARCHIVE_DIR/$FTP_USER-$DATE_NOW-user-ftp.txt
+    echo "-  Suppression du compte pour $FTP_USER"
+    mysql ftp -e "DELETE FROM ftpuser WHERE userid = $FTP_USER;"
 }
 #  }}}
 # }}}
@@ -111,7 +125,7 @@ fi
 
 ## check des binaires necessaires
 # {{{ Binaires
-BIN_DEPS='apache2ctl mysql pwgen'
+BIN_DEPS='apache2ctl mysql pwgen mysqldump ln bzip2 tar'
 for BIN in $BIN_DEPS; do
     which $BIN 1>/dev/null 2>&1
     if [ $? -ne 0 ]; then
@@ -127,10 +141,19 @@ case $1 in
     create )
         vhost_create
         mysql_create
+        ftp_create
         ;;
     delete )
+        vhost_delete
+        mysql_delete
+        ftp_delete
         ;;
     alias )
+        if [ "$@" -lt "3" ]; then
+            usage
+        else
+            vhost_alias
+        fi
         ;;
     * )
         usage ;;
