@@ -2,6 +2,7 @@
 
 #{{{ Config
 WWW_ROOT='/var/www/massvhosts'
+WWW_DEFAULT="$WWW_ROOT/_default_/www"
 SITE_NAME=$2
 SITE_ALIAS=$3
 ARCHIVE_DIR='/var/www/archives'
@@ -21,10 +22,10 @@ FTP_USER=$SITENAME
 vhost_create() {
     echo '=> Apache'
     echo "-  Création des dossiers $WWW_ROOT/$SITE_NAME/{www,cgi-bin}"
-    mkdir -p $WWW_ROOT/$SITE_NAME/www
     mkdir -p $WWW_ROOT/$SITE_NAME/cgi-bin
-    chown -R  $WWW_OWNER $WWW_ROOT/$SITE_NAME/www
+    cp -r $WWW_DEFAULT  $WWW_ROOT/$SITE_NAME/www
     chown -R  $WWW_OWNER $WWW_ROOT/$SITE_NAME/cgi-bin
+    chown -R  $WWW_OWNER $WWW_ROOT/$SITE_NAME/www
 }
 #  }}}
 
@@ -35,6 +36,7 @@ mysql_create() {
     mysql -e "create database $MYSQL_BDD"
     mysql -e "GRANT USAGE ON *.* TO '$MYSQL_USER'@'localhost' IDENTIFIED BY '$MYSQL_PASSWD';"
     mysql -e "GRANT ALL PRIVILEGES ON $MYSQL_USER.* TO '$MYSQL_USER'@'localhost';"
+    echo "-  PhpMyAdmin     : http://$SITE_NAME/phpmyadmin/"
     echo "-  Utilisateur    : $MYSQL_USER"
     echo "-  Mot de passe   : $MYSQL_PASSWD"
     echo "-  Base de donnée : $MYSQL_BDD"
