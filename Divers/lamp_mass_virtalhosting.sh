@@ -21,8 +21,10 @@ FTP_USER=$SITENAME
 vhost_create() {
     echo '=> Apache'
     echo "-  Création des dossiers $WWW_ROOT/$SITE_NAME/{www,cgi-bin}"
-    mkdir -p $WWW_ROOT/$SITE_NAME/{www,cgi-bin}
-    chown -R  $WWW_OWNER $WWW_ROOT/$SITE_NAME/{www,cgi-bin}
+    mkdir -p $WWW_ROOT/$SITE_NAME/www
+    mkdir -p $WWW_ROOT/$SITE_NAME/cgi-bin
+    chown -R  $WWW_OWNER $WWW_ROOT/$SITE_NAME/www
+    chown -R  $WWW_OWNER $WWW_ROOT/$SITE_NAME/cgi-bin
 }
 #  }}}
 
