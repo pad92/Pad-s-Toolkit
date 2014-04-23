@@ -10,7 +10,7 @@ WWW_OWNER='ftpuser'
 MYSQL_AUTH='/etc/mysql/debian.cnf'
 
 DATE_NOW=$(date +'%Y%m%d-%H%M')
-SITENAME=$(echo $SITE_NAME | sed 's/www\.//g' | sed 's/recette\.//g' | sed 's/\.croix-rouge.fr//g' | sed 's/\./-/g' | cut -c1-16 )
+SITENAME=$(echo $SITE_NAME | sed 's/www\.//g' | sed 's/recette\.//g' | sed 's/\.croix-rouge.fr//g' | sed 's/\./-/g' | sed 's/[^a-z|0-9]//g' | cut -c1-16 )
 MYSQL_BDD=$SITENAME
 MYSQL_USER=$SITENAME
 FTP_USER=$SITENAME
