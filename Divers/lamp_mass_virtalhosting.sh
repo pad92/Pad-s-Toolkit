@@ -48,7 +48,7 @@ ftp_create() {
     echo "=> FTP"
     FTP_PASSWD=$(pwgen 16 1)
     echo "-  Créer compte pour $SITE_NAME"
-    mysql ftp -e "INSERT INTO ftpuser (id, userid, passwd, uid, gid, homedir, shell, count, accessed, modified) VALUES ('', '$FTP_USER', ENCRYPT('$FTP_PASSWD'), 2001, 2001, '/var/www/massvhosts/$FTP_USER', '/sbin/nologin', 0, '', '');"
+    mysql ftp -e "INSERT INTO ftpuser (id, userid, passwd, uid, gid, homedir, shell, count, accessed, modified) VALUES ('', '$FTP_USER', ENCRYPT('$FTP_PASSWD'), 2001, 2001, '$WWW_ROOT/$SITE_NAME', '/sbin/nologin', 0, '', '');"
     echo "-  Utilisateur  : $FTP_USER"
     echo "-  Mot de passe : $FTP_PASSWD"
 }
