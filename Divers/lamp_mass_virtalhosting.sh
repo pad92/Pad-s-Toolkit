@@ -23,9 +23,14 @@ vhost_create() {
     echo '=> Apache'
     echo "-  Création des dossiers $WWW_ROOT/$SITE_NAME/{www,cgi-bin}"
     mkdir -p $WWW_ROOT/$SITE_NAME/cgi-bin
+    mkdir -p $WWW_ROOT/$SITE_NAME/config
     cp -r $WWW_DEFAULT  $WWW_ROOT/$SITE_NAME/www
-    chown -R  $WWW_OWNER $WWW_ROOT/$SITE_NAME/cgi-bin
-    chown -R  $WWW_OWNER $WWW_ROOT/$SITE_NAME/www
+    chown -R $WWW_OWNER $WWW_ROOT/$SITE_NAME/cgi-bin
+    chown -R $WWW_OWNER $WWW_ROOT/$SITE_NAME/www
+    chgrp    $WWW_OWNER $WWW_ROOT/$SITE_NAME/config
+    chmod 575           $WWW_ROOT/$SITE_NAME/config
+    touch $WWW_ROOT/$SITE_NAME/config/exclude.rsync
+    chown -R $WWW_OWNER $WWW_ROOT/$SITE_NAME/config/exclude.rsync
 }
 #  }}}
 
