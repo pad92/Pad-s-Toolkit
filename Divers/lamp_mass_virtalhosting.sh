@@ -85,7 +85,7 @@ mysql_delete() {
     mysql -e "DROP DATABASE $MYSQL_BDD";
     mysql -e "DROP USER '$MYSQL_USER'@'localhost';"
 }
-#  }}} 
+#  }}}
 
 #  {{{  FTP
 ftp_delete() {
@@ -103,7 +103,7 @@ mysql_dump() {
     echo "-  Dump de la base $MYSQL_BDD dans $SITE_NAME/config/$MYSQL_BDD.sql.bz2"
     mysqldump --defaults-extra-file=$MYSQL_AUTH --single-transaction --routines $MYSQL_BDD | bzip2 > $WWW_ROOT/$SITE_NAME/config/$MYSQL_BDD.sql.bz2
 }
-#  }}} 
+#  }}}
 #  {{{  MySQL import
 mysql_import() {
     echo "=> MySQL"
@@ -116,8 +116,18 @@ mysql_import() {
         exit 1
     fi
 }
-#  }}} 
-# }}} 
+#  }}}
+#  {{{  MySQL backup all
+mysql_dump_all() {
+    echo "=> MySQL"
+    for MYSQL_SITE in $(ls -1 $WWW_ROOT | grep 'croix-rouge'); do
+        MYSQL_BDD=$(echo $MYSQL_SITE | sed 's/www\.//g' | sed 's/recette\.//g' | sed 's/\.croix-rouge.fr//g' | sed 's/\./-/g' | sed 's/[^a-z|0-9]//g' | cut -c1-16 )
+        echo "-  Dump de la base $MYSQL_BDD\tde $MYSQL_SITE"
+        mysqldump --defaults-extra-file=$MYSQL_AUTH --single-transaction --routines $MYSQL_BDD | bzip2 > $WWW_ROOT/$MYSQL_SITE/config/$MYSQL_BDD.sql.bz2
+    done
+}
+#  }}}
+# }}}
 
 # {{{ Vhost Alias
 vhost_alias() {
@@ -139,6 +149,7 @@ usage() {
     echo "                       delete [fqdn]"
     echo "                       alias  [fqdn] -> [fqdn]"
     echo "                       mysqldump [fqdn]"
+    echo "                       mysqldumpall"
     echo "                       mysqlimport [fqdn]"
     exit 1
 }
@@ -180,6 +191,9 @@ case $1 in
         ;;
     mysqldump )
         mysql_dump
+        ;;
+    mysqldumpall )
+        mysql_dump_all
         ;;
     mysqlimport )
         mysql_import
