@@ -38,9 +38,9 @@ vhost_create() {
 mysql_create() {
     echo '=> MySQL'
     MYSQL_PASSWD=$(pwgen 16 1)
-    mysql -e "create database $MYSQL_BDD"
-    mysql -e "GRANT USAGE ON *.* TO '$MYSQL_USER'@'localhost' IDENTIFIED BY '$MYSQL_PASSWD';"
-    mysql -e "GRANT ALL PRIVILEGES ON $MYSQL_USER.* TO '$MYSQL_USER'@'localhost';"
+    mysql --defaults-extra-file=$MYSQL_AUTH -e "create database $MYSQL_BDD"
+    mysql --defaults-extra-file=$MYSQL_AUTH -e "GRANT USAGE ON *.* TO '$MYSQL_USER'@'localhost' IDENTIFIED BY '$MYSQL_PASSWD';"
+    mysql --defaults-extra-file=$MYSQL_AUTH -e "GRANT ALL PRIVILEGES ON $MYSQL_USER.* TO '$MYSQL_USER'@'localhost';"
     echo "-  PhpMyAdmin     : http://$SITE_NAME/phpmyadmin/"
     echo "-  Utilisateur    : $MYSQL_USER"
     echo "-  Mot de passe   : $MYSQL_PASSWD"
@@ -53,7 +53,7 @@ ftp_create() {
     echo "=> FTP"
     FTP_PASSWD=$(pwgen 16 1)
     echo "-  Créer compte pour $SITE_NAME"
-    mysql ftp -e "INSERT INTO ftpuser (id, userid, passwd, uid, gid, homedir, shell, count, accessed, modified) VALUES ('', '$FTP_USER', ENCRYPT('$FTP_PASSWD'), 2001, 2001, '$WWW_ROOT/$SITE_NAME', '/sbin/nologin', 0, '', '');"
+    mysql ftp --defaults-extra-file=$MYSQL_AUTH -e "INSERT INTO ftpuser (id, userid, passwd, uid, gid, homedir, shell, count, accessed, modified) VALUES ('', '$FTP_USER', ENCRYPT('$FTP_PASSWD'), 2001, 2001, '$WWW_ROOT/$SITE_NAME', '/sbin/nologin', 0, '', '');"
     echo "-  Utilisateur  : $FTP_USER"
     echo "-  Mot de passe : $FTP_PASSWD"
 }
@@ -80,12 +80,12 @@ vhost_delete() {
 mysql_delete() {
     echo '=> MySQL'
     echo "-  Archive BDD $MYSQL_BDD"
-    mysqldump --single-transaction --routines $MYSQL_BDD | bzip2 > $ARCHIVE_DIR/$FTP_USER-$DATE_NOW-sql.bz2
+    mysqldump --defaults-extra-file=$MYSQL_AUTH --single-transaction --routines $MYSQL_BDD | bzip2 > $ARCHIVE_DIR/$FTP_USER-$DATE_NOW-sql.bz2
     echo "-  Efface BDD $MYSQL_BDD"
     mysql -e "DROP DATABASE $MYSQL_BDD";
     mysql -e "DROP USER '$MYSQL_USER'@'localhost';"
 }
-#  }}}
+#  }}} 
 
 #  {{{  FTP
 ftp_delete() {
@@ -95,6 +95,29 @@ ftp_delete() {
 }
 #  }}}
 # }}}
+
+# {{{ Other
+#  {{{  MySQL dump
+mysql_dump() {
+    echo "=> MySQL"
+    echo "-  Dump de la base $MYSQL_BDD dans $SITE_NAME/config/$MYSQL_BDD.sql.bz2"
+    mysqldump --defaults-extra-file=$MYSQL_AUTH --single-transaction --routines $MYSQL_BDD | bzip2 > $WWW_ROOT/$SITE_NAME/config/$MYSQL_BDD.sql.bz2
+}
+#  }}} 
+#  {{{  MySQL import
+mysql_import() {
+    echo "=> MySQL"
+    echo "-  Import de $SITE_NAME/config/$MYSQL_BDD.sql.bz2 dans $MYSQL_BDD"
+    if [ -f $WWW_ROOT/$SITE_NAME/config/$MYSQL_BDD.sql.bz2 ]; then
+        bzcat $WWW_ROOT/$SITE_NAME/config/$MYSQL_BDD.sql.bz2 | mysql $MYSQL_BDD --defaults-extra-file=$MYSQL_AUTH  && rm $WWW_ROOT/$SITE_NAME/config/$MYSQL_BDD.sql.bz2
+    else
+        echo "/!\ $MYSQL_BDD.sql.bz2 n'existe pas"
+        echo "- lancer un dump sur le serveur source puis une synchronisation rsync"
+        exit 1
+    fi
+}
+#  }}} 
+# }}} 
 
 # {{{ Vhost Alias
 vhost_alias() {
@@ -115,6 +138,8 @@ usage() {
     echo "                       create [fqdn]"
     echo "                       delete [fqdn]"
     echo "                       alias  [fqdn] -> [fqdn]"
+    echo "                       mysqldump [fqdn]"
+    echo "                       mysqlimport [fqdn]"
     exit 1
 }
 # }}}
@@ -152,6 +177,12 @@ case $1 in
         vhost_delete
         mysql_delete
         ftp_delete
+        ;;
+    mysqldump )
+        mysql_dump
+        ;;
+    mysqlimport )
+        mysql_import
         ;;
     alias )
         if [ "$#" -lt "3" ]; then
