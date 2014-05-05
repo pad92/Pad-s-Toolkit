@@ -53,7 +53,7 @@ ftp_create() {
     echo "=> FTP"
     FTP_PASSWD=$(pwgen 16 1)
     echo "-  Créer compte pour $SITE_NAME"
-    mysql ftp --defaults-extra-file=$MYSQL_AUTH -e "INSERT INTO ftpuser (id, userid, passwd, uid, gid, homedir, shell, count, accessed, modified) VALUES ('', '$FTP_USER', ENCRYPT('$FTP_PASSWD'), 2001, 2001, '$WWW_ROOT/$SITE_NAME', '/sbin/nologin', 0, '', '');"
+    mysql --defaults-extra-file=$MYSQL_AUTH ftp -e "INSERT INTO ftpuser (id, userid, passwd, uid, gid, homedir, shell, count, accessed, modified) VALUES ('', '$FTP_USER', ENCRYPT('$FTP_PASSWD'), 2001, 2001, '$WWW_ROOT/$SITE_NAME', '/sbin/nologin', 0, '', '');"
     echo "-  Utilisateur  : $FTP_USER"
     echo "-  Mot de passe : $FTP_PASSWD"
 }
@@ -109,7 +109,7 @@ mysql_import() {
     echo "=> MySQL"
     echo "-  Import de $SITE_NAME/config/$MYSQL_BDD.sql.bz2 dans $MYSQL_BDD"
     if [ -f $WWW_ROOT/$SITE_NAME/config/$MYSQL_BDD.sql.bz2 ]; then
-        bzcat $WWW_ROOT/$SITE_NAME/config/$MYSQL_BDD.sql.bz2 | mysql $MYSQL_BDD --defaults-extra-file=$MYSQL_AUTH  && rm $WWW_ROOT/$SITE_NAME/config/$MYSQL_BDD.sql.bz2
+        bzcat $WWW_ROOT/$SITE_NAME/config/$MYSQL_BDD.sql.bz2 | mysql --defaults-extra-file=$MYSQL_AUTH $MYSQL_BDD && rm $WWW_ROOT/$SITE_NAME/config/$MYSQL_BDD.sql.bz2
     else
         echo "/!\ $MYSQL_BDD.sql.bz2 n'existe pas"
         echo "- lancer un dump sur le serveur source puis une synchronisation rsync"
