@@ -2,7 +2,7 @@
 
 # === CONFIG ===
 DIR_PWD=$(pwd)
-BIN_DEPS='zcat mysql'
+BIN_DEPS='bzcat zcat mysql'
 MYCNF='/etc/mysql/debian.cnf'
 
 # === CHECKS ===
@@ -22,7 +22,7 @@ fi
 echo "create databases"
 # Create databases
 for DB_CREATE in $(ls -1 $DIR_PWD/*create.sql); do
-    if [ -f "$i" ]; then
+    if [ -f "$DB_CREATE" ]; then
         mysql --defaults-extra-file=$MYCNF < $DB_CREATE 2>/dev/null
     fi
 done
@@ -30,7 +30,7 @@ done
 echo "import tables"
 # Import tables
 for DATABASES in $( ls -d $DIR_PWD/*/ | awk -F"/" '{ print $(NF-1) }'); do
-    zcat $DIR_PWD/$DATABASES/*.gz | mysql --defaults-extra-file=$MYCNF $DATABASES
+    bzcat $DIR_PWD/$DATABASES/*.bz2 | mysql --defaults-extra-file=$MYCNF $DATABASES
 done
 
 echo "import routines"
