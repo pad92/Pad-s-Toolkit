@@ -26,3 +26,5 @@ APT::Periodic::AutocleanInterval "21";
 //     2:  + command outputs     (remove -qq, remove 2>/dev/null, add -d)
 //     3:  + trace on
 APT::Periodic::Verbose "2";
+
+APT::Periodic::RandomSleep "5";
