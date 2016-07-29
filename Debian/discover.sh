@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env sh
 
 # You should be strict ! ( -e )
 # Or want some debug ? ( -x )
