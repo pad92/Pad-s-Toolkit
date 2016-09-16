@@ -6,7 +6,7 @@
 BCKDIR='/var/backup/mysql'
 MYCNF='/etc/mysql/debian.cnf'
 
-BIN_DEPS='bzip2 mysql mysqldump'
+BIN_DEPS='xz mysql mysqldump'
 DATE=$(date '+%Y.%m.%d')
 DATEOLD=$(date --date='1 week ago' +%Y.%m.%d)
 DST=$BCKDIR/$DATE
@@ -43,8 +43,8 @@ for BDD in `mysql --defaults-file=$MYCNF --skip-column-names -B -e "SHOW databas
         f_log "  ** Dump $BDD.$TABLE"
         mysqldump --defaults-file=$MYCNF --single-transaction $BDD $TABLE > "$DST"/"$BDD"/"$TABLE".sql
         if [ -f "$DST/$BDD/$TABLE.sql" ]; then
-            f_log "  ** bzip2 $BDD/$TABLE.txt in background"
-            bzip2 $DST/$BDD/$TABLE.sql &
+            f_log "  ** xz $BDD/$TABLE.txt in background"
+            xz $DST/$BDD/$TABLE.sql &
         else
             f_log "  ** WARNING : $DST/$BDD/$TABLE.sql not found"
         fi
