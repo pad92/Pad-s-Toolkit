@@ -5,6 +5,7 @@
 # === CONFIG ===
 BCKDIR='/var/backup/mysql'
 MYCNF='/etc/mysql/debian.cnf'
+CNF='/etc/mysql/my.cnf'
 
 BIN_DEPS='xz mysql mysqldump'
 DATE=$(date '+%Y.%m.%d')
@@ -31,6 +32,7 @@ f_log() {
 
 # === CORE ===
 f_log "** START **"
+cp $CNF $DST/
 for BDD in `mysql --defaults-file=$MYCNF --skip-column-names -B -e "SHOW databases;" | egrep -v "^information_schema$|^performance_schema$"`; do
     f_log "* Processing BDD $BDD"
     mysql --defaults-file=$MYCNF --skip-column-names -B -e "SHOW CREATE DATABASE \`$BDD\`;" | awk -F"\t" '{ print $2 }' > $DST/$BDD-create.sql
