@@ -32,7 +32,7 @@ f_log() {
 
 # === CORE ===
 f_log "** START **"
-tar cJf ${DST}/etc_mysql.tar.xz ${CNF}/
+tar cPJf ${DST}/etc_mysql.tar.xz ${CNF}/
 for BDD in `mysql --defaults-file=${MYCNF} --skip-column-names -B -e "SHOW databases;" | egrep -v "^information_schema$|^performance_schema$"`; do
     f_log "* Processing BDD ${BDD}"
     mysql --defaults-file=${MYCNF} --skip-column-names -B -e "SHOW CREATE DATABASE \`${BDD}\`;" | awk -F"\t" '{ print $2 }' > ${DST}/${BDD}-create.sql
