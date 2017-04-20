@@ -60,12 +60,9 @@ def get_args():
     args = parser.parse_args()
 
     if not args.host:
-        args.host = getpass.getpass(
-                prompt='Enter vcenter host : ' )
+        args.host = raw_input('Enter vcenter host : ')
     if not args.user:
-        args.user = getpass.getpass(
-                prompt='Enter user for host %s : ' %
-                (args.host))
+        args.user = raw_input('Enter username : ')
     if not args.password:
         args.password = getpass.getpass(
                 prompt='Enter password : ' ) 
