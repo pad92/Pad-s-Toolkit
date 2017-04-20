@@ -1,0 +1,58 @@
+#!/bin/sh
+#
+#
+# V1 TMT 06/08/2009
+# V3 PAD 27/03/2017
+# Usage: ./check_unix_write IP PORT
+# Utilise une connexion par SSH
+
+PROGPATH=`echo $0 | /bin/sed -e 's,[\\/][^\\/][^\\/]*$,,'`
+. $PROGPATH/utils.sh
+
+HOST=$1
+PORT=$2
+STATE=${STATE_OK}
+
+# verifications
+if [ $# -le 1 ]; then
+    echo "Usage : $0 [IP] [PORT]"
+    exit ${STATE_UNKNOWN}
+fi
+
+if [ -z ${PORT} ]; then
+    PORT=22
+fi
+
+SSH_OUT=`ssh -q -p ${PORT} ${HOST} "mount | grep -E 'ext2|ext3|ext4|xfs' | grep -w -E 'ro|rw' | cut -d' ' -f3,6"`
+SSH_EXITCODE=$?
+
+if [ ${SSH_EXITCODE} -eq 0 ]; then
+    if [ -z "$SSH_OUT" ]; then
+        echo -n "Aucun systeme de fichier en ext2, ext3, ext4 ou xfs"
+        exit ${STATE_UNKNOWN}
+    fi
+OUT="${OUT}<table style=\"width:100%\">"
+OUT="${OUT}<tr><th>point de montage</th><th>options de montage</th></tr>"
+    while read -r FS; do
+        OUT="${OUT}<tr>"
+        if echo ${FS} | grep --quiet rw; then
+            OUT="${OUT} <td><font color=green>`echo ${FS} | cut -d' ' -f1`</font></td><td><font color=green>`echo ${FS} | cut -d' ' -f2`</font></td>"
+        elif echo ${FS} | grep --quiet ro; then
+            OUT="${OUT} <td><font color=red>`echo ${FS} | cut -d' ' -f1`</font></td><td><font color=red>`echo ${FS} | cut -d' ' -f2`</font></td>"
+            STATE=${STATE_CRITICAL}
+        else
+            OUT="${OUT} <td>`echo ${FS} | cut -d' ' -f1`</font></td><td><font color=red>`echo ${FS} | cut -d' ' -f2`</font></td>"
+            STATE=${STATE_CRITICAL}
+        fi
+        OUT="${OUT}</tr>"
+    done <<< "${SSH_OUT}"
+    OUT="${OUT}</table>"
+else
+    echo "<font color=red>Erreur #${SSH_EXITCODE} ssh :  ${SSH_OUT}</font><br />"
+    exit ${STATE_UNKNOWN}
+fi
+
+
+# sortie
+echo -n ${OUT}
+exit ${STATE}
