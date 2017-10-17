@@ -44,7 +44,7 @@ tar cPJf ${DST}/etc_mysql.tar.xz ${CNF}/
         f_log "  > Export 'SHOW CREATE TABLE'"
         mysqldump --defaults-file=${MYCNF} ${MYSQL_PARAM} --routines --no-create-info --no-data --no-create-db --skip-opt ${BDD} > ${DST}/${BDD}-routines.sql
         f_log "  > Exports Routines"
-        for TABLE in `mysql --defaults-file=${MYCNF} --skip-column-names -B ${BDD} -e "SHOW TABLES;" | grep -v slow_log | grep -v general_log`; do
+        for TABLE in `mysql --defaults-file=${MYCNF} --skip-column-names -B ${BDD} -e "SHOW full tables where Table_Type = 'BASE TABLE';" | cut -f1 -s`; do
             mkdir -p ${DST}/${BDD} 2>/dev/null 1>&2
             chown mysql:mysql ${DST}/${BDD}
             f_log "  ** Dump ${BDD}.${TABLE}"
