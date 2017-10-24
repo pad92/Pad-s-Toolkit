@@ -11,11 +11,11 @@ CNF='/etc/mysql/'                   # mysql configuration
 #MYSQL_PARAM='--set-gtid-purged=OFF' # MySQL > 5.6
 MYSQL_PARAM=''                      # MySQL < 5.6
 
-BIN_DEPS='xz mysql mysqldump'
-DATE=$(date '+%Y.%m.%d')
-DATEOLD=$(date --date='1 week ago' +%Y.%m.%d)
-DST=${BCKDIR}/${DATE}
-DSTOLD=${BCKDIR}/${DATEOLD}
+BIN_DEPS='xz mysql mysqldump'                    # binaries
+DATE=$(date '+%Y.%m.%d_%H')                      # now, for internal usage
+DATEOLD=$(date --date='1 week ago' +%Y.%m.%d_%H) # old backup to delete, change time here
+DST=${BCKDIR}/${DATE}                            # target directory
+DSTOLD=${BCKDIR}/${DATEOLD}                      # old backup to delete
 
 # === CHECKS ===
 for BIN in ${BIN_DEPS}; do
