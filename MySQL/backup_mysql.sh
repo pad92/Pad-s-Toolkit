@@ -39,6 +39,8 @@ f_log() {
 # === CORE ===
 f_log "** START **"
 tar cPJf ${DST}/etc_mysql.tar.xz ${CNF}/
+ mysqlpump --exclude-databases=% --add-drop-user --users | xz > ${DST}/users.sql.xz
+
 {
     for BDD in `mysql --defaults-file=${MYCNF} --skip-column-names -B -e "SHOW databases;" | egrep -v "^information_schema$|^performance_schema$"`; do
         f_log "* Processing BDD ${BDD}"
