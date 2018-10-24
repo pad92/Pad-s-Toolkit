@@ -53,7 +53,7 @@ mysqldump --defaults-file=${MYCNF} ${MYSQL_PARAM} --exclude-databases=% --add-dr
             f_log "  ** Dump ${BDD}.${TABLE}"
             # SQL Dump
             if [ $DUMP_SQL = true ]; then
-              mysqldump --defaults-file=${MYCNF} ${MYSQL_PARAM} --single-transaction ${BDD} ${TABLE} > "${DST}"/"${BDD}"/"${TABLE}".sql
+              mysqldump --defaults-file=${MYCNF} ${MYSQL_PARAM} --single-transaction --quick ${BDD} ${TABLE} > "${DST}"/"${BDD}"/"${TABLE}".sql
               if [ -f "${DST}/${BDD}/${TABLE}.sql" ]; then
                   f_log "  ** xz ${BDD}/${TABLE}.txt in background"
                   xz ${DST}/${BDD}/${TABLE}.sql &
