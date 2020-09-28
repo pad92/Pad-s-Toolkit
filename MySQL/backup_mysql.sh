@@ -1,8 +1,8 @@
 #!/bin/sh
 #
-# Reference : https://git.depad.fr/depad/pad-s-toolkit/raw/master/MySQL/backup_mysql.sh
+# Reference : https://github.com/pad92/Pad-s-Toolkit/blob/master/MySQL/backup_mysql.sh
 #
-# Install : wget https://git.depad.fr/depad/pad-s-toolkit/raw/master/MySQL/backup_mysql.sh -O /usr/local/bin/backup_mysql.sh && chmod +x /usr/local/bin/backup_mysql.sh
+# Install : wget https://raw.githubusercontent.com/pad92/Pad-s-Toolkit/master/MySQL/backup_mysql.sh -O /usr/local/bin/backup_mysql.sh && chmod +x /usr/local/bin/backup_mysql.sh
 
 # === CONFIG ===
 BCKDIR='/var/backups/mysql'         # backup destination
